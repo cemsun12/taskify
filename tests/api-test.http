@@ -1,0 +1,12 @@
+### Görev oluştur
+POST http://127.0.0.1:8000/api/tasks
+Content-Type: application/json
+
+{
+  "title": "VS Code'dan gönderildi",
+  "description": "REST Client test",
+  "is_completed": false
+}
+
+### Görevleri getir
+GET http://127.0.0.1:8000/api/tasks
