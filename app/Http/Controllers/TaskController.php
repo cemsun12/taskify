@@ -10,6 +10,11 @@ class TaskController extends Controller
     public function index()
     {
         return Task::all(); // Tüm görevleri getir
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $tasks
+        ]);
     }
 
     public function store(Request $request)
@@ -22,12 +27,19 @@ class TaskController extends Controller
 
         $task = Task::create($request->all());
 
-        return response()->json($task, 201);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Görev Başarıyla Oluşturuldu!',
+            'data' => $task
+        ], 201);;
     }
 
     public function show(Task $task)
     {
-        return $task;
+        return response()->json([
+            'status' => 'success',
+            'data' => $task
+        ]);
     }
 
     public function update(Request $request, Task $task)
@@ -40,13 +52,20 @@ class TaskController extends Controller
 
         $task->update($request->all());
 
-        return response()->json($task);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Task updated successfully',
+            'data' => $task
+        ]);;
     }
 
     public function destroy(Task $task)
     {
         $task->delete();
 
-        return response()->json(['message' => 'Task deleted.'], 204);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Görev Başarıyla Silindi!'
+        ], 204); // No Content
     }
 }

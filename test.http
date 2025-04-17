@@ -1,0 +1,12 @@
+### Yeni görev oluştur
+POST http://127.0.0.1:8000/api/tasks
+Content-Type: application/json
+
+{
+  "title": "İlk Görev",
+  "description": "Bu görev test için",
+  "is_completed": false
+}
+
+### Tüm görevleri getir
+GET http://127.0.0.1:8000/api/tasks
