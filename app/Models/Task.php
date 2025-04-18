@@ -10,5 +10,6 @@ class Task extends Model
     use HasFactory;
     
     protected $fillable = ['title', 'description', 'is_completed'];
+    public $timestamps = true;
 
 }
