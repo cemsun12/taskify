@@ -8,31 +8,55 @@ use Illuminate\Http\Request;
 class TaskController extends Controller
 {
     public function index()
-    {
-        return Task::all(); // Tüm görevleri getir
+{
+    $tasks = Task::with('subtasks')->whereNull('parent_id')->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $tasks
-        ]);
+    return response()->json([
+        'status' => 'success',
+        'data' => $tasks
+    ]);
+}
+
+
+public function store(Request $request)
+{
+    $request->validate([
+        'title' => 'required|string',
+        'description' => 'nullable|string',
+        'is_completed' => 'boolean',
+        'parent_id' => 'nullable|exists:tasks,id',
+        'subtasks' => 'nullable|array',
+        'subtasks.*' => 'required|string',
+    ]);
+
+    // Ana görev
+    $task = Task::create([
+        'title' => $request->title,
+        'description' => $request->description,
+        'is_completed' => $request->is_completed ?? false,
+        'parent_id' => $request->parent_id, // null ise ana görevdir
+    ]);
+
+    // Alt görevler varsa
+    if ($request->has('subtasks') && is_array($request->subtasks)) {
+        foreach ($request->subtasks as $subtaskTitle) {
+            Task::create([
+                'title' => $subtaskTitle,
+                'description' => '',
+                'is_completed' => false,
+                'parent_id' => $task->id, // ✅ İşte burası alt görev ilişkisi!
+            ]);
+        }
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required|string',
-            'description' => 'nullable|string',
-            'is_completed' => 'boolean',
-        ]);
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Görev başarıyla oluşturuldu!',
+        'data' => $task->load('subtasks')
+    ], 201);
+}
 
-        $task = Task::create($request->all());
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Görev Başarıyla Oluşturuldu!',
-            'data' => $task
-        ], 201);;
-    }
 
     public function show(Task $task)
     {
@@ -43,33 +67,43 @@ class TaskController extends Controller
     }
 
     public function update(Request $request, Task $task)
-    {
-        $request->validate([
-            'title' => 'sometimes|string',
-            'description' => 'sometimes|string|nullable',
-            'is_completed' => 'sometimes|boolean',
-        ]);
+{
+    $request->validate([
+        'title' => 'sometimes|string',
+        'description' => 'sometimes|string|nullable',
+        'is_completed' => 'sometimes|boolean',
+        'subtasks' => 'nullable|array',
+        'subtasks.*' => 'required|string',
+    ]);
 
-        $task->update($request->all());
+    $task->update($request->only(['title', 'description', 'is_completed']));
 
-        /*return response()->json([
-            'status' => 'success',
-            'message' => 'Task updated successfully',
-            'data' => $task
-        ]);;*/
+    // ✅ Alt görevleri güncelle (eskiyi sil, yenileri ekle)
+    if ($request->has('subtasks') && is_array($request->subtasks)) {
+        // Mevcut alt görevleri sil
+        foreach ($task->subtasks as $subtask) {
+            $subtask->delete();
+        }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Task updated successfully',
-            'data' => [
-                'id' => $task->id,
-                'title' => $task->title,
-                'description' => $task->description,
-                'is_completed' => $task->is_completed,
-                'created_at' => $task->created_at,
-            ]
-        ]);
+        // Yeni alt görevleri ekle
+        foreach ($request->subtasks as $title) {
+            Task::create([
+                'title' => $title,
+                'description' => '',
+                'is_completed' => false,
+                'parent_id' => $task->id,
+            ]);
+        }
     }
+
+    // ✅ Güncellenmiş görevle birlikte alt görevleri döndür
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Task updated successfully',
+        'data' => $task->load('subtasks'), // alt görevlerle birlikte
+    ]);
+}
+
 
     public function destroy(Task $task)
     {

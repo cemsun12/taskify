@@ -23,7 +23,7 @@ export default function Header({
     setNewDesc,
     newTask,
     setNewTask,
-    addTask,
+    onTaskCreated,
 }: {
     isDialogOpen: boolean;
     setIsDialogOpen: (val: boolean) => void;
@@ -31,8 +31,11 @@ export default function Header({
     setNewDesc: (val: string) => void;
     newTask: string;
     setNewTask: (val: string) => void;
-    addTask: () => void;
+    onTaskCreated?: () => void;
 }) {
+    const [subtasks, setSubtasks] = useState<string[]>([]);
+    const [newSubtask, setNewSubtask] = useState("");
+
     return (
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6">
             <SidebarTrigger />
@@ -77,6 +80,46 @@ export default function Header({
                                 onChange={(e) => setNewDesc(e.target.value)}
                             />
                         </div>
+                        <div className="space-y-2 mt-4">
+                            <h4 className="text-sm font-semibold">
+                                Alt Görevler
+                            </h4>
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="Alt görev ekle"
+                                    value={newSubtask}
+                                    onChange={(e) =>
+                                        setNewSubtask(e.target.value)
+                                    }
+                                />
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={() => {
+                                        if (newSubtask.trim()) {
+                                            const updated = [
+                                                ...subtasks,
+                                                newSubtask,
+                                            ];
+                                            console.log(
+                                                "🧪 Yeni subtasks:",
+                                                updated
+                                            ); // ✅ bunu ekle
+                                            setSubtasks(updated);
+                                            setNewSubtask("");
+                                        }
+                                    }}
+                                >
+                                    Ekle
+                                </Button>
+                            </div>
+
+                            <ul className="list-disc ml-4 text-sm text-muted-foreground">
+                                {subtasks.map((sub, index) => (
+                                    <li key={index}>{sub}</li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
 
                     <DialogFooter>
@@ -86,7 +129,39 @@ export default function Header({
                         >
                             Cancel
                         </Button>
-                        <Button onClick={addTask}>Create Task</Button>
+                        <Button
+                            onClick={() => {
+                                if (!newTask.trim()) return;
+
+                                fetch("http://127.0.0.1:8000/api/tasks", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                        title: newTask,
+                                        description: newDesc,
+                                        is_completed: false,
+                                        subtasks, // ✅ artık lokal state'ten geliyor
+                                    }),
+                                })
+                                    .then((res) => res.json())
+                                    .then((resJson) => {
+                                        console.log(
+                                            "🎯 Görev oluşturuldu:",
+                                            resJson
+                                        );
+                                        setNewTask("");
+                                        setNewDesc("");
+                                        setSubtasks([]);
+                                        setIsDialogOpen(false);
+                                        if (onTaskCreated) onTaskCreated(); // opsiyonel tetikleme
+                                    })
+                                    .catch(() => alert("Görev oluşturulamadı"));
+                            }}
+                        >
+                            Görev Oluştur
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

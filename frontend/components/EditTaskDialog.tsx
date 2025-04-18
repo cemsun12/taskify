@@ -1,5 +1,3 @@
-"use client";
-
 import {
     Dialog,
     DialogContent,
@@ -12,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Task } from "@/types";
 
@@ -27,6 +25,12 @@ export default function EditTaskDialog({
     const [description, setDescription] = useState(task.description);
     const [open, setOpen] = useState(false);
 
+    // ✅ Alt görevler için state
+    const [subtasks, setSubtasks] = useState<string[]>(
+        task.subtasks?.map((s) => s.title) || []
+    );
+    const [newSubtask, setNewSubtask] = useState("");
+
     const handleUpdate = () => {
         fetch(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
             method: "PUT",
@@ -36,6 +40,7 @@ export default function EditTaskDialog({
             body: JSON.stringify({
                 title,
                 description,
+                subtasks, // ✅ alt görevleri de gönder
                 is_completed: task.is_completed,
             }),
         })
@@ -78,6 +83,56 @@ export default function EditTaskDialog({
                             setDescription(e.target.value)
                         }
                     />
+
+                    <div className="space-y-2">
+                        <p className="text-sm font-semibold">Alt Görevler</p>
+
+                        {/* Alt görev ekleme */}
+                        <div className="flex gap-2">
+                            <Input
+                                placeholder="Alt görev ekle"
+                                value={newSubtask}
+                                onChange={(e) => setNewSubtask(e.target.value)}
+                            />
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => {
+                                    if (newSubtask.trim()) {
+                                        setSubtasks([...subtasks, newSubtask]);
+                                        setNewSubtask("");
+                                    }
+                                }}
+                            >
+                                Ekle
+                            </Button>
+                        </div>
+
+                        {/* Alt görev listesi */}
+                        <ul className="list-disc ml-4 space-y-1 text-sm text-muted-foreground">
+                            {subtasks.map((sub, index) => (
+                                <li
+                                    key={index}
+                                    className="flex items-center justify-between"
+                                >
+                                    {sub}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSubtasks(
+                                                subtasks.filter(
+                                                    (_, i) => i !== index
+                                                )
+                                            );
+                                        }}
+                                        title="Sil"
+                                    >
+                                        <Trash2 className="w-4 h-4 text-red-500" />
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
                 <div className="flex justify-end">
                     <Button onClick={handleUpdate}>Kaydet</Button>

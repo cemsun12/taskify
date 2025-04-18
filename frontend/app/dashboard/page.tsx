@@ -13,16 +13,15 @@ export default function DashboardPage() {
     const [newTask, setNewTask] = useState("");
     const [newDesc, setNewDesc] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const incompleteTasks = tasks.filter((task) => !task.is_completed);
+    const completeTasks = tasks.filter((task) => task.is_completed);
 
-    const handleAdd = () => {
-        if (newTask.trim()) {
-            addTask(newTask, newDesc, () => {
-                setNewTask("");
-                setNewDesc("");
-                setIsDialogOpen(false);
-            });
-        }
-    };
+    // ✅ Alt görevleri Header kendi içinde yönetecek, burada tanımlamaya gerek yok.
+
+    // ✅ Görev eklendikten sonra liste güncelleme işlemleri burada yapılabilir
+    /*const handleAdd = () => {
+        // Bu fonksiyon artık kullanılmıyor çünkü Header içinden fetch yapılıyor.
+    };*/
 
     return (
         <div className="flex min-h-screen bg-background">
@@ -33,14 +32,43 @@ export default function DashboardPage() {
                     setIsDialogOpen={setIsDialogOpen}
                     newTask={newTask}
                     setNewTask={setNewTask}
-                    addTask={handleAdd}
                     newDesc={newDesc}
                     setNewDesc={setNewDesc}
+                    onTaskCreated={() => {
+                        // istersen sayfayı yenileyebilirsin veya burada görevleri yeniden çekebilirsin
+                        window.location.reload();
+                    }}
                 />
-
                 <main className="flex-1 p-6">
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {tasks.map((task) => (
+                        {incompleteTasks.length > 0 && (
+                            <div className="col-span-full mt-4">
+                                <h4 className="text-sm font-semibold text-muted-foreground">
+                                    Devam Eden Görevler
+                                </h4>
+                            </div>
+                        )}
+                        {incompleteTasks.map((task) => (
+                            <TaskCard
+                                key={task.id}
+                                task={task}
+                                onToggle={() => toggleTaskStatus(task.id)}
+                                onDelete={() => deleteTask(task.id)}
+                                onUpdate={updateTask}
+                            />
+                        ))}
+
+                        {/* Başlık: Tamamlanan Görevler */}
+                        {completeTasks.length > 0 && (
+                            <div className="col-span-full mt-4">
+                                <h4 className="text-sm font-semibold text-muted-foreground">
+                                    Tamamlanan Görevler
+                                </h4>
+                            </div>
+                        )}
+
+                        {/* Tamamlanan Görevler */}
+                        {completeTasks.map((task) => (
                             <TaskCard
                                 key={task.id}
                                 task={task}
