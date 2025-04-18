@@ -1,4 +1,6 @@
 import { CalendarDays } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import EditTaskDialog from "./EditTaskDialog";
 import {
     Card,
     CardContent,
@@ -16,13 +18,19 @@ import { format } from "date-fns";
 export default function TaskCard({
     task,
     onToggle,
+    onDelete,
+    onUpdate,
 }: {
     task: Task;
     onToggle: () => void;
+    onDelete: () => void;
+    onUpdate: (updatedTask: Task) => void;
 }) {
     return (
         <Card
-            className={task.completed ? "border-green-200 bg-green-50/50" : ""}
+            className={
+                task.is_completed ? "border-green-200 bg-green-50/50" : ""
+            }
         >
             <CardHeader className="pb-2">
                 <CardTitle className="text-lg">{task.title}</CardTitle>
@@ -35,18 +43,30 @@ export default function TaskCard({
             </CardHeader>
             <CardContent>
                 <Separator className="my-2" />
+                <p className="text-sm text-muted-foreground">
+                    {task.description}
+                </p>
             </CardContent>
-            <CardFooter className="flex justify-between">
+            <CardFooter className="flex justify-between items-center">
                 <div className="flex items-center space-x-2">
                     <Switch
                         id={`task-${task.id}`}
-                        checked={task.completed}
+                        checked={task.is_completed}
                         onCheckedChange={onToggle}
                     />
                     <Label htmlFor={`task-${task.id}`}>
-                        {task.completed ? "Completed" : "Not completed"}
+                        {task.is_completed ? "Tamamlandı" : "Tamamlanmadı"}
                     </Label>
                 </div>
+                <EditTaskDialog task={task} onUpdate={onUpdate} />
+                <button
+                    onClick={onDelete}
+                    className="flex items-center px-2 py-1 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition"
+                    title="Görevi Sil"
+                >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    <span className="text-sm font-medium">Sil</span>
+                </button>
             </CardFooter>
         </Card>
     );
