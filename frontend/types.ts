@@ -4,4 +4,6 @@ export interface Task {
     description: string;
     is_completed: boolean;
     created_at: string;
+    parent_id?: string | null;
+    subtasks?: Task[];
 }

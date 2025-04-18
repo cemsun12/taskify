@@ -10,20 +10,23 @@ export default function useTasks() {
     useEffect(() => {
         fetch("http://127.0.0.1:8000/api/tasks")
             .then((res) => res.json())
-            .then((data) => {
-                const formatted = data.map((task: any) => ({
+            .then((resJson) => {
+                const tasks = resJson.data; // 👈 sadece `data` içindeki diziye eriş
+                const formatted = tasks.map((task: any) => ({
                     ...task,
                     id: String(task.id),
                     is_completed: !!task.is_completed,
                 }));
                 setTasks(formatted);
             })
+
             .catch((err) => console.error("Görevler alınamadı:", err));
     }, []);
 
     const addTask = (
         title: string,
         description: string,
+        subtasks: string[],
         onSuccess?: () => void
     ) => {
         fetch("http://127.0.0.1:8000/api/tasks", {
@@ -35,6 +38,7 @@ export default function useTasks() {
                 title,
                 description,
                 is_completed: false,
+                subtasks,
             }),
         })
             .then((res) => res.json())
