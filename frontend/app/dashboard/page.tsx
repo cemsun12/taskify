@@ -13,6 +13,7 @@ export default function DashboardPage() {
     const [newTask, setNewTask] = useState("");
     const [newDesc, setNewDesc] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    // CRUD processes
 
     const handleAdd = () => {
         if (newTask.trim()) {
