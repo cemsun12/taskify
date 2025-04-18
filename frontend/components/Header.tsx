@@ -36,6 +36,14 @@ export default function Header({
     const [subtasks, setSubtasks] = useState<string[]>([]);
     const [newSubtask, setNewSubtask] = useState("");
 
+    const handleAddSubtask = () => {
+        if (newSubtask.trim()) {
+            const updated = [...subtasks, newSubtask.trim()];
+            setSubtasks(updated);
+            setNewSubtask("");
+        }
+    };
+
     return (
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6">
             <SidebarTrigger />
@@ -91,7 +99,14 @@ export default function Header({
                                     onChange={(e) =>
                                         setNewSubtask(e.target.value)
                                     }
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            e.preventDefault();
+                                            handleAddSubtask();
+                                        }
+                                    }}
                                 />
+
                                 <Button
                                     type="button"
                                     variant="secondary"
