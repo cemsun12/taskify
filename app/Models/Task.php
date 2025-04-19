@@ -9,13 +9,20 @@ class Task extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'is_completed', 'parent_id'];
+    protected $fillable = ['title', 'description', 'is_completed','project_id', 'parent_id'];
     public $timestamps = true;
 
     public function subtasks()
     {
         return $this->hasMany(Task::class, 'parent_id');
     }
+
+    public function project()
+{
+    return $this->belongsTo(Project::class);
+}
+
+
 
     public function parent()
     {

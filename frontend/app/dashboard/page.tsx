@@ -4,6 +4,7 @@ import { useState } from "react";
 import useTasks from "@/hooks/useTasks";
 import Header from "@/components/Header";
 import TaskCard from "@/components/TaskCard";
+import Sidebar from "@/components/Sidebar";
 
 export default function DashboardPage() {
     const { tasks, addTask, deleteTask, updateTask, toggleTaskStatus } =
@@ -24,6 +25,9 @@ export default function DashboardPage() {
 
     return (
         <div className="flex min-h-screen bg-background">
+            <div className="hidden md:block w-64">
+                <Sidebar />
+            </div>
             <div className="flex flex-1 flex-col">
                 <Header
                     isDialogOpen={isDialogOpen}

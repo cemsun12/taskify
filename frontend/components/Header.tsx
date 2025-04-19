@@ -5,6 +5,7 @@ import { Plus, Search } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Menu } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 import NavigationLinks from "@/components/NavigationLinks";
 import {
@@ -17,7 +18,6 @@ import {
     DialogTrigger,
 } from "./ui/dialog";
 import { Label } from "./ui/label";
-import { SidebarTrigger } from "./Sidebar";
 
 export default function Header({
     isDialogOpen,
@@ -46,6 +46,15 @@ export default function Header({
             setNewSubtask("");
         }
     };
+
+    const searchParams = useSearchParams();
+    const projectIdParam = searchParams?.get("project");
+    const projectId = projectIdParam ? Number(projectIdParam) : null;
+
+    if (!projectId) {
+        alert("Lütfen önce bir proje seçin.");
+        return;
+    }
 
     return (
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-6">
@@ -156,6 +165,11 @@ export default function Header({
                             onClick={() => {
                                 if (!newTask.trim()) return;
 
+                                console.log(
+                                    "🔍 GÖNDERİLEN project_id:",
+                                    projectId
+                                );
+
                                 fetch("http://127.0.0.1:8000/api/tasks", {
                                     method: "POST",
                                     headers: {
@@ -165,7 +179,8 @@ export default function Header({
                                         title: newTask,
                                         description: newDesc,
                                         is_completed: false,
-                                        subtasks, // ✅ artık lokal state'ten geliyor
+                                        subtasks,
+                                        project_id: Number(projectId),
                                     }),
                                 })
                                     .then((res) => res.json())
