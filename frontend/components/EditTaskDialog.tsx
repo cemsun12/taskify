@@ -31,6 +31,14 @@ export default function EditTaskDialog({
     );
     const [newSubtask, setNewSubtask] = useState("");
 
+    const handleAddSubtask = () => {
+        if (newSubtask.trim()) {
+            const updated = [...subtasks, newSubtask.trim()];
+            setSubtasks(updated);
+            setNewSubtask("");
+        }
+    };
+
     const handleUpdate = () => {
         fetch(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
             method: "PUT",
@@ -93,6 +101,12 @@ export default function EditTaskDialog({
                                 placeholder="Alt görev ekle"
                                 value={newSubtask}
                                 onChange={(e) => setNewSubtask(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        handleAddSubtask();
+                                    }
+                                }}
                             />
                             <Button
                                 type="button"

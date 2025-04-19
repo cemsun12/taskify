@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Menu } from "lucide-react";
+
+import NavigationLinks from "@/components/NavigationLinks";
 import {
     Dialog,
     DialogContent,
@@ -36,9 +39,18 @@ export default function Header({
     const [subtasks, setSubtasks] = useState<string[]>([]);
     const [newSubtask, setNewSubtask] = useState("");
 
+    const handleAddSubtask = () => {
+        if (newSubtask.trim()) {
+            const updated = [...subtasks, newSubtask.trim()];
+            setSubtasks(updated);
+            setNewSubtask("");
+        }
+    };
+
     return (
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6">
-            <SidebarTrigger />
+        <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-6">
+            <MobileMenu />
+
             <div className="relative flex-1 md:max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -46,6 +58,10 @@ export default function Header({
                     placeholder="Search tasks..."
                     className="w-full pl-8"
                 />
+            </div>
+
+            <div className="hidden md:flex gap-4">
+                <NavigationLinks /> {/* Geniş ekran için linkler */}
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
@@ -91,7 +107,14 @@ export default function Header({
                                     onChange={(e) =>
                                         setNewSubtask(e.target.value)
                                     }
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            e.preventDefault();
+                                            handleAddSubtask();
+                                        }
+                                    }}
                                 />
+
                                 <Button
                                     type="button"
                                     variant="secondary"
@@ -174,4 +197,19 @@ export default function Header({
             </Button>
         </header>
     );
+
+    function MobileMenu() {
+        return (
+            <Dialog>
+                <DialogTrigger asChild>
+                    <button className="block md:hidden p-2 text-muted-foreground hover:text-foreground">
+                        <Menu className="w-5 h-5" />
+                    </button>
+                </DialogTrigger>
+                <DialogContent className="p-6 space-y-4">
+                    <NavigationLinks />
+                </DialogContent>
+            </Dialog>
+        );
+    }
 }
