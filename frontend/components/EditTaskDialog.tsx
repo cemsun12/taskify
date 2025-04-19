@@ -65,6 +65,7 @@ export default function EditTaskDialog({
                 onUpdate(updated);
                 updateTask(updated); // Frontend'de de güncelle
                 setOpen(false);
+                window.location.reload();
             })
             .catch(() => alert("Güncelleme başarısız oldu"));
     };
