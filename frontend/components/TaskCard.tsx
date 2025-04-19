@@ -28,10 +28,17 @@ export default function TaskCard({
     onToggle: () => void;
 }) {
     const { tasks, updateTask } = useTasks();
-    const task = tasks.find((t) => t.id === taskId);
+    const task = tasks.find((t) => String(t.id) === String(taskId));
+
+    {
+        /*..*/
+    }
 
     if (!task) return null;
     const progress = calculateProgress(task);
+    {
+        /*..*/
+    }
 
     const handleToggleSubtask = (subtaskId: string) => {
         const subtask = task.subtasks?.find((s) => s.id === subtaskId);
@@ -120,20 +127,27 @@ export default function TaskCard({
 
             <CardContent>
                 <Separator className="my-2" />
-                {task.subtasks && task.subtasks.length > 0 && (
+
+                {/* Alt görev sayısı test logu */}
+                <div className="text-xs text-blue-500 mt-2">
+                    Alt görev sayısı (render test): {task.subtasks?.length ?? 0}
+                </div>
+
+                {/* Alt görevler varsa çiz */}
+                {Array.isArray(task.subtasks) && task.subtasks.length > 0 ? (
                     <>
-                        <p className="text-xs text-muted-foreground font-semibold">
+                        <p className="text-xs text-muted-foreground font-semibold mt-2">
                             Alt Görevler:
                         </p>
                         <ul className="space-y-1 mt-2">
-                            {task.subtasks.map((sub) => (
+                            {task.subtasks.map((sub, index) => (
                                 <li
-                                    key={sub.id}
+                                    key={sub.id || index}
                                     className="flex items-center gap-2"
                                 >
                                     <input
                                         type="checkbox"
-                                        checked={sub.is_completed}
+                                        checked={!!sub.is_completed}
                                         onChange={() =>
                                             handleToggleSubtask(sub.id)
                                         }
@@ -146,16 +160,21 @@ export default function TaskCard({
                                                 : ""
                                         }
                                     >
-                                        {sub.title}
+                                        {sub.title || "[Başlıksız alt görev]"}
                                     </span>
                                 </li>
                             ))}
                         </ul>
                     </>
+                ) : (
+                    <p className="text-xs text-red-500 mt-2">
+                        Alt görev bulunamadı veya boş.
+                    </p>
                 )}
             </CardContent>
 
-            {task.subtasks && task.subtasks.length > 0 && (
+            {/* İlerleme çubuğu */}
+            {Array.isArray(task.subtasks) && task.subtasks.length > 0 && (
                 <div className="mt-4">
                     <div className="h-2 w-[95%] bg-muted rounded-full overflow-hidden mx-auto">
                         <div

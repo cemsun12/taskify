@@ -54,23 +54,28 @@ export default function DashboardPage() {
     };*/
 
     return (
-        <div className="flex min-h-screen bg-background">
-            <div className="hidden md:block w-64">
-                <Sidebar />
-            </div>
-            <div className="flex flex-1 flex-col">
-                <Header
-                    isDialogOpen={isDialogOpen}
-                    setIsDialogOpen={setIsDialogOpen}
-                    newTask={newTask}
-                    setNewTask={setNewTask}
-                    newDesc={newDesc}
-                    setNewDesc={setNewDesc}
-                    onTaskCreated={() => {
-                        // istersen sayfayı yenileyebilirsin veya burada görevleri yeniden çekebilirsin
-                        window.location.reload();
-                    }}
-                />
+        <div className="min-h-screen flex flex-col">
+            {/* 🧱 Sabit Header */}
+            <Header
+                isDialogOpen={isDialogOpen}
+                setIsDialogOpen={setIsDialogOpen}
+                newTask={newTask}
+                setNewTask={setNewTask}
+                newDesc={newDesc}
+                setNewDesc={setNewDesc}
+                onTaskCreated={() => {
+                    window.location.reload();
+                }}
+            />
+
+            {/* 🔽 Header yüksekliği kadar padding-top ekle */}
+            <div className="flex flex-1 pt-16">
+                {/* 📁 Sidebar */}
+                <div className="w-64 hidden md:block border-r">
+                    <Sidebar />
+                </div>
+
+                {/* ✅ Sayfa içeriği */}
                 <main className="flex-1 p-6">
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {incompleteTasks.length > 0 && (
@@ -89,7 +94,6 @@ export default function DashboardPage() {
                             />
                         ))}
 
-                        {/* Başlık: Tamamlanan Görevler */}
                         {completeTasks.length > 0 && (
                             <div className="col-span-full mt-4">
                                 <h4 className="text-sm font-semibold text-muted-foreground">
@@ -97,8 +101,6 @@ export default function DashboardPage() {
                                 </h4>
                             </div>
                         )}
-
-                        {/* Tamamlanan Görevler */}
                         {completeTasks.map((task) => (
                             <TaskCard
                                 key={task.id}

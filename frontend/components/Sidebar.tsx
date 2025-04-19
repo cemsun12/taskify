@@ -29,13 +29,14 @@ export default function Sidebar() {
     return (
         <aside className="w-64 h-screen border-r bg-white dark:bg-zinc-900 flex flex-col justify-between">
             <div>
-                <div className="px-6 py-4 border-b">
-                    <h1 className="text-xl font-bold flex items-center gap-2">
-                        <Folder className="w-5 h-5 text-primary" />
-                        Projeler
-                    </h1>
+                {/* Sidebar başlığı */}
+                <div className="px-6 py-4">
+                    <h2 className="text-md font-bold text-primary">
+                        Projelerim
+                    </h2>
                 </div>
 
+                {/* Proje Listesi */}
                 <nav className="flex flex-col gap-1 p-4 overflow-y-auto max-h-[70vh]">
                     {projects.map((project) => (
                         <button
@@ -50,6 +51,7 @@ export default function Sidebar() {
                     ))}
                 </nav>
 
+                {/* Yeni Proje Oluştur */}
                 <div className="p-4 border-t flex gap-2">
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
@@ -91,23 +93,6 @@ export default function Sidebar() {
                         </DialogContent>
                     </Dialog>
                 </div>
-
-                {/*...
-                    <input
-                        className="w-full text-sm px-2 py-1 rounded-md border"
-                        value={newProjectName}
-                        onChange={(e) => setNewProjectName(e.target.value)}
-                        placeholder="Yeni proje"
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") handleAddProject();
-                        }}
-                    />
-                    <button
-                        onClick={handleAddProject}
-                        className="p-2 bg-primary text-white rounded-md"
-                    >
-                        <Plus className="w-4 h-4" />
-                    </button>*/}
             </div>
         </aside>
     );

@@ -86,13 +86,76 @@ export default function useTasks() {
             });
     };
 
-    const updateTask = (updatedTask: Task) => {
-        setTasks((prevTasks) =>
-            prevTasks.map((task) =>
-                task.id === updatedTask.id ? updatedTask : task
-            )
-        );
+    const refetchTasks = () => {
+        if (!projectId) return;
+
+        fetch(`http://127.0.0.1:8000/api/tasks?project_id=${projectId}`)
+            .then((res) => res.json())
+            .then((data) => {
+                setTasks(data.data);
+                console.log("🔄 Görevler yeniden çekildi:", data.data.length);
+            });
     };
+
+    const updateTask = (updatedTask: Task) => {
+        fetch(`http://127.0.0.1:8000/api/tasks/${updatedTask.id}`)
+            .then((res) => res.json())
+            .then((resJson) => {
+                const refreshed = resJson.data;
+
+                const newTask: Task = {
+                    ...refreshed,
+                    id: String(refreshed.id),
+                    is_completed: !!refreshed.is_completed,
+                    subtasks: (refreshed.subtasks || []).map((s: any) => ({
+                        id: String(s.id),
+                        title: s.title,
+                        is_completed: !!s.is_completed,
+                    })),
+                };
+
+                setTasks((prevTasks) => {
+                    const others = prevTasks.filter((t) => t.id !== newTask.id);
+                    const updatedList = [...others, newTask];
+                    console.log(
+                        "🧠 setTasks → yeni görev sayısı:",
+                        updatedList.length
+                    );
+                    return updatedList;
+                });
+
+                toast.success("✅ Görev güncellendi!");
+            })
+            .catch((err) => {
+                toast.error("❌ Güncelleme başarısız oldu");
+                console.error("updateTask error:", err);
+            });
+    };
+
+    {
+        /*const updateTask = (updatedTask: Task) => {
+        setTasks((prevTasks) => {
+            const updatedTasks = prevTasks.map((task) => {
+                if (task.id === updatedTask.id) {
+                    const updated = {
+                        ...updatedTask,
+                        title: updatedTask.title + " ", // 👈 Zorla değişim için boşluk ekliyoruz (SİLİNEBİLİR)
+                        subtasks: updatedTask.subtasks?.map((s) => ({
+                            ...s,
+                            title: s.title + "", // 👈 Her subtask’a da referans kırıcı etki
+                        })),
+                    };
+
+                    console.log("🛠️ updateTask çalıştı:", updated.title);
+                    return updated;
+                }
+                return task;
+            });
+
+            return [...updatedTasks]; // diziyi de zorla değiştiriyoruz
+        });
+    };*/
+    }
 
     const toggleTaskStatus = (id: string) => {
         const task = tasks.find((t) => t.id === id);

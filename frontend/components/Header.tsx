@@ -57,8 +57,10 @@ export default function Header({
     }
 
     return (
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-6">
+        <header className="w-full fixed top-0 left-0 z-50 flex h-16 items-center justify-between gap-4 border-b bg-background px-6 shadow-sm">
             <MobileMenu />
+
+            <div className="text-xl font-bold text-primary">Taskify</div>
 
             <div className="relative flex-1 md:max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -133,10 +135,10 @@ export default function Header({
                                                 ...subtasks,
                                                 newSubtask,
                                             ];
-                                            console.log(
-                                                "🧪 Yeni subtasks:",
-                                                updated
-                                            ); // ✅ bunu ekle
+                                            {
+                                                /*..*/
+                                            }
+
                                             setSubtasks(updated);
                                             setNewSubtask("");
                                         }
@@ -165,10 +167,9 @@ export default function Header({
                             onClick={() => {
                                 if (!newTask.trim()) return;
 
-                                console.log(
-                                    "🔍 GÖNDERİLEN project_id:",
-                                    projectId
-                                );
+                                {
+                                    /*..*/
+                                }
 
                                 fetch("http://127.0.0.1:8000/api/tasks", {
                                     method: "POST",
@@ -185,10 +186,10 @@ export default function Header({
                                 })
                                     .then((res) => res.json())
                                     .then((resJson) => {
-                                        console.log(
-                                            "🎯 Görev oluşturuldu:",
-                                            resJson
-                                        );
+                                        {
+                                            /*..*/
+                                        }
+
                                         setNewTask("");
                                         setNewDesc("");
                                         setSubtasks([]);

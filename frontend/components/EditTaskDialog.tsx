@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Task } from "@/types";
+import { useRouter } from "next/navigation";
 
 export default function EditTaskDialog({ task }: { task: Task }) {
     const [title, setTitle] = useState(task.title);
@@ -23,6 +24,7 @@ export default function EditTaskDialog({ task }: { task: Task }) {
     const [subtasks, setSubtasks] = useState<string[]>(
         task.subtasks?.map((s) => s.title) || []
     );
+    const router = useRouter();
     const [newSubtask, setNewSubtask] = useState("");
     const { updateTask } = useTasks();
 
@@ -39,6 +41,8 @@ export default function EditTaskDialog({ task }: { task: Task }) {
         })
             .then((res) => res.json())
             .then((resJson) => {
+                console.log("🧪 Alt görev detayları:", resJson.data.subtasks);
+                console.log("🚀 Güncellenen görev yanıtı:", resJson.data);
                 const updated = {
                     ...resJson.data,
                     id: String(resJson.data.id),
@@ -48,6 +52,7 @@ export default function EditTaskDialog({ task }: { task: Task }) {
                 };
                 updateTask(updated);
                 setOpen(false);
+                window.location.reload();
             })
             .catch(() => alert("Güncelleme başarısız oldu"));
     };
