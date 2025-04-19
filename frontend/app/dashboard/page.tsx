@@ -5,6 +5,9 @@ import useTasks from "@/hooks/useTasks";
 import Header from "@/components/Header";
 import TaskCard from "@/components/TaskCard";
 import Sidebar from "@/components/Sidebar";
+import { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import useProjects from "@/hooks/useProjects";
 
 export default function DashboardPage() {
     const { tasks, addTask, deleteTask, updateTask, toggleTaskStatus } =
@@ -15,6 +18,33 @@ export default function DashboardPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const incompleteTasks = tasks.filter((task) => !task.is_completed);
     const completeTasks = tasks.filter((task) => task.is_completed);
+
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const { projects } = useProjects();
+
+    const projectId = searchParams.get("project");
+
+    useEffect(() => {
+        if (!projectId && projects.length > 0) {
+            router.replace(`/dashboard?project=${projects[0].id}`);
+        }
+    }, [projectId, projects]);
+
+    if (!projectId && projects.length === 0) {
+        return (
+            <div className="w-full h-screen flex items-center justify-center">
+                <div className="text-center space-y-2">
+                    <h2 className="text-lg font-semibold">
+                        Henüz projeniz yok
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        Lütfen bir proje oluşturarak başlayın.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     // ✅ Alt görevleri Header kendi içinde yönetecek, burada tanımlamaya gerek yok.
 

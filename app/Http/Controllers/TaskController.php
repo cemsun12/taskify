@@ -7,15 +7,22 @@ use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    public function index()
-    {
-        $tasks = Task::with('subtasks')->whereNull('parent_id')->get();
+    public function index(Request $request)
+{
+    $query = Task::with('subtasks')->whereNull('parent_id');
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $tasks
-        ]);
+    if ($request->has('project_id')) {
+        $query->where('project_id', $request->project_id);
     }
+
+    $tasks = $query->get();
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $tasks
+    ]);
+}
+
 
     public function store(Request $request)
     {

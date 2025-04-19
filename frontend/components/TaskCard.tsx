@@ -78,7 +78,6 @@ export default function TaskCard({
 
     const handleToggleMainTask = () => {
         const newMainStatus = !task.is_completed;
-
         // ✅ Ana görev güncelle
         fetch(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
             method: "PUT",
