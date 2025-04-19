@@ -1,5 +1,6 @@
-import { CalendarDays } from "lucide-react";
-import { Trash2 } from "lucide-react";
+"use client";
+
+import { CalendarDays, Trash2 } from "lucide-react";
 import EditTaskDialog from "./EditTaskDialog";
 import {
     Card,
@@ -12,22 +13,24 @@ import {
 import { Label } from "./ui/label";
 import { Separator } from "./ui/separator";
 import { Switch } from "./ui/switch";
-import { Task } from "../types";
 import { format } from "date-fns";
 import { calculateProgress } from "@/utils/progress";
 import { Progress } from "@/components/ui/progress";
+import useTasks from "@/hooks/useTasks";
 
 export default function TaskCard({
-    task,
-    onToggle,
+    taskId,
     onDelete,
-    onUpdate,
+    onToggle,
 }: {
-    task: Task;
-    onToggle: () => void;
+    taskId: string;
     onDelete: () => void;
-    onUpdate: (updatedTask: Task) => void;
+    onToggle: () => void;
 }) {
+    const { tasks, updateTask } = useTasks();
+    const task = tasks.find((t) => t.id === taskId);
+
+    if (!task) return null;
     const progress = calculateProgress(task);
 
     const handleToggleSubtask = (subtaskId: string) => {
@@ -43,49 +46,39 @@ export default function TaskCard({
         })
             .then((res) => res.json())
             .then((resJson) => {
-                if (resJson.data) {
-                    // ✅ Güncel alt görevleri oluştur
-                    const updatedSubtasks = task.subtasks?.map((s) =>
-                        s.id === subtaskId
-                            ? { ...s, is_completed: newCompleted }
-                            : s
-                    );
+                const updatedSubtasks = task.subtasks?.map((s) =>
+                    s.id === subtaskId
+                        ? { ...s, is_completed: newCompleted }
+                        : s
+                );
+                const allCompleted =
+                    updatedSubtasks?.every((s) => s.is_completed) ?? false;
 
-                    // ✅ Tüm alt görevler tamamlandı mı kontrol et
-                    const allCompleted =
-                        updatedSubtasks?.every((s) => s.is_completed) ?? false;
-
-                    // ✅ Ana görevi de backend'de güncelle
-                    if (allCompleted !== task.is_completed) {
-                        fetch(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
-                            method: "PUT",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                is_completed: allCompleted,
-                            }),
-                        });
-                    }
-
-                    // ✅ Kartı güncelle
-                    onUpdate({
-                        ...task,
-                        is_completed: allCompleted,
-                        subtasks: updatedSubtasks,
+                if (allCompleted !== task.is_completed) {
+                    fetch(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ is_completed: allCompleted }),
                     });
                 }
+
+                updateTask({
+                    ...task,
+                    is_completed: allCompleted,
+                    subtasks: updatedSubtasks,
+                });
             });
     };
 
     const handleToggleMainTask = () => {
         const newMainStatus = !task.is_completed;
-        // ✅ Ana görev güncelle
+
         fetch(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ is_completed: newMainStatus }),
         });
 
-        // ✅ Alt görevleri de güncelle (isteğe bağlı)
         if (task.subtasks && task.subtasks.length > 0) {
             task.subtasks.forEach((sub) => {
                 fetch(`http://127.0.0.1:8000/api/tasks/${sub.id}`, {
@@ -96,8 +89,7 @@ export default function TaskCard({
             });
         }
 
-        // ✅ Frontend güncelle
-        onUpdate({
+        updateTask({
             ...task,
             is_completed: newMainStatus,
             subtasks: task.subtasks?.map((s) => ({
@@ -116,37 +108,24 @@ export default function TaskCard({
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                     <CardTitle className="text-lg">{task.title}</CardTitle>
-
                     <CardDescription className="flex items-center text-xs text-muted-foreground">
                         <CalendarDays className="mr-1 h-3 w-3" />
-                        {task.created_at && !isNaN(Date.parse(task.created_at))
-                            ? format(new Date(task.created_at), "MMM d, yyyy")
-                            : "Geçersiz tarih"}
+                        {format(new Date(task.created_at), "MMM d, yyyy")}
                     </CardDescription>
                 </div>
-
                 <p className="text-sm text-muted-foreground mt-1">
                     {task.description}
                 </p>
-
-                {task.subtasks && task.subtasks.length > 0 && (
-                    <div className="mt-3 space-y-1">
-                        <p className="text-xs text-muted-foreground font-semibold">
-                            Alt Görevler:
-                        </p>
-                    </div>
-                )}
             </CardHeader>
 
             <CardContent>
                 <Separator className="my-2" />
-
                 {task.subtasks && task.subtasks.length > 0 && (
-                    <div className="mt-3 space-y-2">
+                    <>
                         <p className="text-xs text-muted-foreground font-semibold">
                             Alt Görevler:
                         </p>
-                        <ul className="space-y-1">
+                        <ul className="space-y-1 mt-2">
                             {task.subtasks.map((sub) => (
                                 <li
                                     key={sub.id}
@@ -172,7 +151,7 @@ export default function TaskCard({
                                 </li>
                             ))}
                         </ul>
-                    </div>
+                    </>
                 )}
             </CardContent>
 
@@ -181,13 +160,11 @@ export default function TaskCard({
                     <div className="h-2 w-[95%] bg-muted rounded-full overflow-hidden mx-auto">
                         <div
                             className="h-full bg-green-500 transition-all"
-                            style={{
-                                width: `${calculateProgress(task)}%`,
-                            }}
+                            style={{ width: `${progress}%` }}
                         />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 ml-2">
-                        {calculateProgress(task)}% tamamlandı (
+                        {progress}% tamamlandı (
                         {task.subtasks.filter((s) => s.is_completed).length}/
                         {task.subtasks.length})
                     </p>
@@ -205,7 +182,7 @@ export default function TaskCard({
                         {task.is_completed ? "Tamamlandı" : "Tamamlanmadı"}
                     </Label>
                 </div>
-                <EditTaskDialog task={task} onUpdate={onUpdate} />
+                <EditTaskDialog task={task} />
                 <button
                     onClick={onDelete}
                     className="flex items-center px-2 py-1 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition"

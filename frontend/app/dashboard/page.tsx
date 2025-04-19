@@ -83,10 +83,9 @@ export default function DashboardPage() {
                         {incompleteTasks.map((task) => (
                             <TaskCard
                                 key={task.id}
-                                task={task}
+                                taskId={task.id}
                                 onToggle={() => toggleTaskStatus(task.id)}
                                 onDelete={() => deleteTask(task.id)}
-                                onUpdate={updateTask}
                             />
                         ))}
 
@@ -103,10 +102,9 @@ export default function DashboardPage() {
                         {completeTasks.map((task) => (
                             <TaskCard
                                 key={task.id}
-                                task={task}
+                                taskId={task.id}
                                 onToggle={() => toggleTaskStatus(task.id)}
                                 onDelete={() => deleteTask(task.id)}
-                                onUpdate={updateTask}
                             />
                         ))}
                     </div>

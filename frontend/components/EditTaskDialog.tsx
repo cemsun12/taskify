@@ -1,3 +1,5 @@
+"use client";
+
 import {
     Dialog,
     DialogContent,
@@ -7,7 +9,6 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import useTasks from "@/hooks/useTasks";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,41 +16,24 @@ import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Task } from "@/types";
 
-export default function EditTaskDialog({
-    task,
-    onUpdate,
-}: {
-    task: Task;
-    onUpdate: (updatedTask: Task) => void;
-}) {
+export default function EditTaskDialog({ task }: { task: Task }) {
     const [title, setTitle] = useState(task.title);
     const [description, setDescription] = useState(task.description);
     const [open, setOpen] = useState(false);
-
     const [subtasks, setSubtasks] = useState<string[]>(
         task.subtasks?.map((s) => s.title) || []
     );
     const [newSubtask, setNewSubtask] = useState("");
     const { updateTask } = useTasks();
 
-    const handleAddSubtask = () => {
-        if (newSubtask.trim()) {
-            const updated = [...subtasks, newSubtask.trim()];
-            setSubtasks(updated);
-            setNewSubtask("");
-        }
-    };
-
     const handleUpdate = () => {
         fetch(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 title,
                 description,
-                subtasks, // string[] olarak backend'e gönderiliyor
+                subtasks,
                 is_completed: task.is_completed,
             }),
         })
@@ -60,13 +44,19 @@ export default function EditTaskDialog({
                     id: String(resJson.data.id),
                     is_completed: !!resJson.data.is_completed,
                     created_at: resJson.data.created_at,
-                    subtasks: resJson.data.subtasks ?? [], // eksikse bile array olarak gelmeli
+                    subtasks: resJson.data.subtasks ?? [],
                 };
-                onUpdate(updated);
-                updateTask(updated); // Frontend'de de güncelle
+                updateTask(updated);
                 setOpen(false);
             })
             .catch(() => alert("Güncelleme başarısız oldu"));
+    };
+
+    const handleAddSubtask = () => {
+        if (newSubtask.trim()) {
+            setSubtasks([...subtasks, newSubtask.trim()]);
+            setNewSubtask("");
+        }
     };
 
     return (
@@ -80,7 +70,7 @@ export default function EditTaskDialog({
                 <DialogHeader>
                     <DialogTitle>Görevi Düzenle</DialogTitle>
                     <DialogDescription>
-                        Görevin başlığını ve açıklamasını değiştir.
+                        Görev bilgilerini değiştir.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -90,9 +80,7 @@ export default function EditTaskDialog({
                     />
                     <Textarea
                         value={description}
-                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                            setDescription(e.target.value)
-                        }
+                        onChange={(e) => setDescription(e.target.value)}
                     />
                     <div className="space-y-2">
                         <p className="text-sm font-semibold">Alt Görevler</p>
@@ -125,13 +113,13 @@ export default function EditTaskDialog({
                                     {sub}
                                     <button
                                         type="button"
-                                        onClick={() => {
+                                        onClick={() =>
                                             setSubtasks(
                                                 subtasks.filter(
                                                     (_, i) => i !== index
                                                 )
-                                            );
-                                        }}
+                                            )
+                                        }
                                         title="Sil"
                                     >
                                         <Trash2 className="w-4 h-4 text-red-500" />
