@@ -52,23 +52,31 @@ export default function Header({
     const searchParams = useSearchParams();
     const projectIdParam = searchParams?.get("project");
     const projectId = projectIdParam ? Number(projectIdParam) : null;
+    const [openMobileProjects, setOpenMobileProjects] = useState(false);
 
     return (
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-6">
             {/* Mobilde Projelerim + Menü */}
             <div className="flex md:hidden items-center gap-2">
                 {/* Projelerim */}
-                <Dialog>
+
+                <Dialog
+                    open={openMobileProjects}
+                    onOpenChange={setOpenMobileProjects}
+                >
                     <DialogTrigger asChild>
                         <Button variant="ghost" size="icon" title="Projelerim">
                             <FolderKanban className="h-5 w-5" />
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-h-[80vh] overflow-y-auto">
+                    <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Projelerim</DialogTitle>
                         </DialogHeader>
-                        <Sidebar isMobile />
+                        {/* ✨ Buraya önemli değişiklik */}
+                        <Sidebar
+                            onProjectSelect={() => setOpenMobileProjects(false)}
+                        />
                     </DialogContent>
                 </Dialog>
 

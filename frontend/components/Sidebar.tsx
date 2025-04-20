@@ -13,10 +13,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 
-export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
+export default function Sidebar({
+    onProjectSelect,
+}: {
+    onProjectSelect?: () => void;
+}) {
     const { projects, addProject } = useProjects();
     const [newProjectName, setNewProjectName] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    const router = useRouter();
 
     const handleAddProject = async () => {
         if (!newProjectName.trim()) return;
@@ -24,16 +30,8 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
         setNewProjectName("");
     };
 
-    const router = useRouter();
-
     return (
-        <aside
-            className={`${
-                isMobile
-                    ? "w-full max-h-[70vh] overflow-y-auto"
-                    : "w-64 h-screen"
-            } border-r bg-white dark:bg-zinc-900 flex flex-col justify-between`}
-        >
+        <aside className="w-full md:w-64 h-full border-r bg-white dark:bg-zinc-900 flex flex-col justify-between">
             <div>
                 <div className="px-6 py-4 border-b">
                     <h1 className="text-md font-bold flex items-center gap-2">
@@ -45,9 +43,10 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
                     {projects.map((project) => (
                         <button
                             key={project.id}
-                            onClick={() =>
-                                router.push(`/dashboard?project=${project.id}`)
-                            }
+                            onClick={() => {
+                                router.push(`/dashboard?project=${project.id}`);
+                                if (onProjectSelect) onProjectSelect(); // ✨ Sadece mobilde gönderilen fonksiyon çalışır
+                            }}
                             className="text-left text-sm px-3 py-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                         >
                             {project.name}
@@ -66,7 +65,7 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
                                 Yeni Proje
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-h-[80vh] overflow-y-auto">
+                        <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>Yeni Proje Oluştur</DialogTitle>
                             </DialogHeader>
