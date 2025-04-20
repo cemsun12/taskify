@@ -7,9 +7,15 @@ use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    public function index()
+    public function index(Request $request)
 {
-    $tasks = Task::with('subtasks')->whereNull('parent_id')->get();
+    $query = Task::with('subtasks')->whereNull('parent_id');
+
+    if ($request->has('project_id')) {
+        $query->where('project_id', $request->project_id);
+    }
+
+    $tasks = $query->get();
 
     return response()->json([
         'status' => 'success',
@@ -18,45 +24,46 @@ class TaskController extends Controller
 }
 
 
-public function store(Request $request)
-{
-    $request->validate([
-        'title' => 'required|string',
-        'description' => 'nullable|string',
-        'is_completed' => 'boolean',
-        'parent_id' => 'nullable|exists:tasks,id',
-        'subtasks' => 'nullable|array',
-        'subtasks.*' => 'required|string',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string',
+            'project_id' => 'required|exists:projects,id',
+            'description' => 'nullable|string',
+            'is_completed' => 'boolean',
+            'parent_id' => 'nullable|exists:tasks,id',
+            'subtasks' => 'nullable|array',
+            'subtasks.*' => 'required|string',
+        ]);
 
-    // Ana görev
-    $task = Task::create([
-        'title' => $request->title,
-        'description' => $request->description,
-        'is_completed' => $request->is_completed ?? false,
-        'parent_id' => $request->parent_id, // null ise ana görevdir
-    ]);
+        // Ana görev
+        $task = Task::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'is_completed' => $request->is_completed ?? false,
+            'parent_id' => $request->parent_id,
+            'project_id' => $request->project_id,
+        ]);
 
-    // Alt görevler varsa
-    if ($request->has('subtasks') && is_array($request->subtasks)) {
-        foreach ($request->subtasks as $subtaskTitle) {
-            Task::create([
-                'title' => $subtaskTitle,
-                'description' => '',
-                'is_completed' => false,
-                'parent_id' => $task->id, // ✅ İşte burası alt görev ilişkisi!
-            ]);
+        // Alt görevler varsa
+        if ($request->has('subtasks') && is_array($request->subtasks)) {
+            foreach ($request->subtasks as $subtaskTitle) {
+                Task::create([
+                    'title' => $subtaskTitle,
+                    'description' => '',
+                    'is_completed' => false,
+                    'parent_id' => $task->id,
+                    'project_id' => $request->project_id, // ✅ eklendi
+                ]);
+            }
         }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Görev başarıyla oluşturuldu!',
+            'data' => $task->load('subtasks')
+        ], 201);
     }
-
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Görev başarıyla oluşturuldu!',
-        'data' => $task->load('subtasks')
-    ], 201);
-}
-
-
 
     public function show(Task $task)
     {
@@ -67,43 +74,41 @@ public function store(Request $request)
     }
 
     public function update(Request $request, Task $task)
-{
-    $request->validate([
-        'title' => 'sometimes|string',
-        'description' => 'sometimes|string|nullable',
-        'is_completed' => 'sometimes|boolean',
-        'subtasks' => 'nullable|array',
-        'subtasks.*' => 'required|string',
-    ]);
+    {
+        $request->validate([
+            'title' => 'sometimes|string',
+            'description' => 'sometimes|string|nullable',
+            'is_completed' => 'sometimes|boolean',
+            'project_id' => 'sometimes|exists:projects,id',
+            'subtasks' => 'nullable|array',
+            'subtasks.*' => 'required|string',
+        ]);
 
-    $task->update($request->only(['title', 'description', 'is_completed']));
+        $task->update($request->only(['title', 'description', 'is_completed']));
 
-    // ✅ Alt görevleri güncelle (eskiyi sil, yenileri ekle)
-    if ($request->has('subtasks') && is_array($request->subtasks)) {
-        // Mevcut alt görevleri sil
-        foreach ($task->subtasks as $subtask) {
-            $subtask->delete();
+        // Alt görevleri güncelle
+        if ($request->has('subtasks') && is_array($request->subtasks)) {
+            foreach ($task->subtasks as $subtask) {
+                $subtask->delete();
+            }
+
+            foreach ($request->subtasks as $title) {
+                Task::create([
+                    'title' => $title,
+                    'description' => '',
+                    'is_completed' => false,
+                    'parent_id' => $task->id,
+                    'project_id' => $request->project_id ?? $task->project_id, // ✅ fallback
+                ]);
+            }
         }
 
-        // Yeni alt görevleri ekle
-        foreach ($request->subtasks as $title) {
-            Task::create([
-                'title' => $title,
-                'description' => '',
-                'is_completed' => false,
-                'parent_id' => $task->id,
-            ]);
-        }
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Task updated successfully',
+            'data' => $task->load('subtasks'),
+        ]);
     }
-
-    // ✅ Güncellenmiş görevle birlikte alt görevleri döndür
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Task updated successfully',
-        'data' => $task->load('subtasks'), // alt görevlerle birlikte
-    ]);
-}
-
 
     public function destroy(Task $task)
     {
@@ -112,6 +117,6 @@ public function store(Request $request)
         return response()->json([
             'status' => 'success',
             'message' => 'Görev Başarıyla Silindi!'
-        ], 204); // No Content
+        ], 204);
     }
 }

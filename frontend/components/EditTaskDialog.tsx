@@ -6,6 +6,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import useTasks from "@/hooks/useTasks";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,11 +26,11 @@ export default function EditTaskDialog({
     const [description, setDescription] = useState(task.description);
     const [open, setOpen] = useState(false);
 
-    // ✅ Alt görevler için state
     const [subtasks, setSubtasks] = useState<string[]>(
         task.subtasks?.map((s) => s.title) || []
     );
     const [newSubtask, setNewSubtask] = useState("");
+    const { updateTask } = useTasks();
 
     const handleAddSubtask = () => {
         if (newSubtask.trim()) {
@@ -48,7 +49,7 @@ export default function EditTaskDialog({
             body: JSON.stringify({
                 title,
                 description,
-                subtasks, // ✅ alt görevleri de gönder
+                subtasks, // string[] olarak backend'e gönderiliyor
                 is_completed: task.is_completed,
             }),
         })
@@ -59,9 +60,12 @@ export default function EditTaskDialog({
                     id: String(resJson.data.id),
                     is_completed: !!resJson.data.is_completed,
                     created_at: resJson.data.created_at,
+                    subtasks: resJson.data.subtasks ?? [], // eksikse bile array olarak gelmeli
                 };
                 onUpdate(updated);
+                updateTask(updated); // Frontend'de de güncelle
                 setOpen(false);
+                window.location.reload();
             })
             .catch(() => alert("Güncelleme başarısız oldu"));
     };
@@ -91,11 +95,8 @@ export default function EditTaskDialog({
                             setDescription(e.target.value)
                         }
                     />
-
                     <div className="space-y-2">
                         <p className="text-sm font-semibold">Alt Görevler</p>
-
-                        {/* Alt görev ekleme */}
                         <div className="flex gap-2">
                             <Input
                                 placeholder="Alt görev ekle"
@@ -111,18 +112,11 @@ export default function EditTaskDialog({
                             <Button
                                 type="button"
                                 variant="secondary"
-                                onClick={() => {
-                                    if (newSubtask.trim()) {
-                                        setSubtasks([...subtasks, newSubtask]);
-                                        setNewSubtask("");
-                                    }
-                                }}
+                                onClick={handleAddSubtask}
                             >
                                 Ekle
                             </Button>
                         </div>
-
-                        {/* Alt görev listesi */}
                         <ul className="list-disc ml-4 space-y-1 text-sm text-muted-foreground">
                             {subtasks.map((sub, index) => (
                                 <li

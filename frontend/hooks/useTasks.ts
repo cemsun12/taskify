@@ -3,11 +3,23 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Task } from "@/types";
+import { useSearchParams } from "next/navigation";
 
 export default function useTasks() {
     const [tasks, setTasks] = useState<Task[]>([]);
+    const searchParams = useSearchParams();
+    const projectId = searchParams.get("project");
 
     useEffect(() => {
+        if (!projectId) return;
+
+        fetch(`http://127.0.0.1:8000/api/tasks?project_id=${projectId}`)
+            .then((res) => res.json())
+            .then((data) => setTasks(data.data));
+    }, [projectId]);
+
+    {
+        /*useEffect(() => {
         fetch("http://127.0.0.1:8000/api/tasks")
             .then((res) => res.json())
             .then((resJson) => {
@@ -21,7 +33,8 @@ export default function useTasks() {
             })
 
             .catch((err) => console.error("Görevler alınamadı:", err));
-    }, []);
+    }, []);*/
+    }
 
     const addTask = (
         title: string,
@@ -39,6 +52,7 @@ export default function useTasks() {
                 description,
                 is_completed: false,
                 subtasks,
+                projectId,
             }),
         })
             .then((res) => res.json())
