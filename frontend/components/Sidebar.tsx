@@ -1,5 +1,5 @@
 import useProjects from "@/hooks/useProjects";
-import { Folder } from "lucide-react";
+import { FolderKanban } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 
-export default function Sidebar() {
+export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
     const { projects, addProject } = useProjects();
     const [newProjectName, setNewProjectName] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -27,12 +27,17 @@ export default function Sidebar() {
     const router = useRouter();
 
     return (
-        <aside className="w-64 h-screen border-r bg-white dark:bg-zinc-900 flex flex-col justify-between">
+        <aside
+            className={`${
+                isMobile
+                    ? "w-full max-h-[70vh] overflow-y-auto"
+                    : "w-64 h-screen"
+            } border-r bg-white dark:bg-zinc-900 flex flex-col justify-between`}
+        >
             <div>
                 <div className="px-6 py-4 border-b">
-                    <h1 className="text-xl font-bold flex items-center gap-2">
-                        <Folder className="w-5 h-5 text-primary" />
-                        Projeler
+                    <h1 className="text-md font-bold flex items-center gap-2">
+                        Projelerim
                     </h1>
                 </div>
 
@@ -61,7 +66,7 @@ export default function Sidebar() {
                                 Yeni Proje
                             </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-h-[80vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle>Yeni Proje Oluştur</DialogTitle>
                             </DialogHeader>
@@ -91,23 +96,6 @@ export default function Sidebar() {
                         </DialogContent>
                     </Dialog>
                 </div>
-
-                {/*...
-                    <input
-                        className="w-full text-sm px-2 py-1 rounded-md border"
-                        value={newProjectName}
-                        onChange={(e) => setNewProjectName(e.target.value)}
-                        placeholder="Yeni proje"
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") handleAddProject();
-                        }}
-                    />
-                    <button
-                        onClick={handleAddProject}
-                        className="p-2 bg-primary text-white rounded-md"
-                    >
-                        <Plus className="w-4 h-4" />
-                    </button>*/}
             </div>
         </aside>
     );

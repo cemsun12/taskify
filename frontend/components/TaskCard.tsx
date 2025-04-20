@@ -109,9 +109,9 @@ export default function TaskCard({
 
     return (
         <Card
-            className={
+            className={`w-full max-w-full sm:max-w-md mx-auto ${
                 task.is_completed ? "border-green-200 bg-green-50/50" : ""
-            }
+            }`}
         >
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
@@ -128,14 +128,6 @@ export default function TaskCard({
                 <p className="text-sm text-muted-foreground mt-1">
                     {task.description}
                 </p>
-
-                {task.subtasks && task.subtasks.length > 0 && (
-                    <div className="mt-3 space-y-1">
-                        <p className="text-xs text-muted-foreground font-semibold">
-                            Alt Görevler:
-                        </p>
-                    </div>
-                )}
             </CardHeader>
 
             <CardContent>

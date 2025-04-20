@@ -4,8 +4,10 @@ import { useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { FolderKanban } from "lucide-react";
 import { Menu } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import Sidebar from "@/components/Sidebar";
 
 import NavigationLinks from "@/components/NavigationLinks";
 import {
@@ -51,14 +53,42 @@ export default function Header({
     const projectIdParam = searchParams?.get("project");
     const projectId = projectIdParam ? Number(projectIdParam) : null;
 
-    if (!projectId) {
-        alert("Lütfen önce bir proje seçin.");
-        return;
-    }
-
     return (
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-6">
-            <MobileMenu />
+            {/* Mobilde Projelerim + Menü */}
+            <div className="flex md:hidden items-center gap-2">
+                {/* Projelerim */}
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="ghost" size="icon" title="Projelerim">
+                            <FolderKanban className="h-5 w-5" />
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Projelerim</DialogTitle>
+                        </DialogHeader>
+                        <Sidebar isMobile />
+                    </DialogContent>
+                </Dialog>
+
+                {/* Menü */}
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="ghost" size="icon" title="Menü">
+                            <Menu className="h-5 w-5" />
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <NavigationLinks />
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            <div className="flex items-center gap-2">
+                <FolderKanban className="w-5 h-5 text-primary" />
+                <span className="text-lg font-bold">Taskify</span>
+            </div>
 
             <div className="relative flex-1 md:max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
